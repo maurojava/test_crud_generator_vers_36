@@ -5,10 +5,12 @@
  */
 package mauro.facade;
 
+import java.util.Collection;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import mauro.entity.Customer;
+import mauro.entity.PurchaseOrder;
 
 /**
  *
@@ -32,10 +34,9 @@ public class CustomerFacade extends AbstractFacade<Customer> {
     /**
      *method for re -attach the customer to persistence context and load the purchaseOrderCollection that for default is lazy loaded from Customer entity
      */
-    public Customer attach_and_load_PurchaseOrderCollection(Customer customer) {
-        this.em.merge(customer);
-        customer.getPurchaseOrderCollection().size();
-        return customer;
+    
+    public Collection<PurchaseOrder> getPurchaseOrders (Customer customer) {
+        return this.em.merge(customer).getPurchaseOrderCollection();
     }
 
 }

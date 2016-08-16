@@ -6,6 +6,7 @@
     <properties>
         <property name="openjpa.Log" value="SQL=TRACE"/> 
         <property name="openjpa.ConnectionFactoryProperties" value="PrintParameters=true" />
+        <property name="openjpa.jdbc.DBDictionary" value="StoreCharsAsNumbers=false"/>
     </properties>
   </persistence-unit>
 </persistence>

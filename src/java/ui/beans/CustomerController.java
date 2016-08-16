@@ -1,7 +1,9 @@
 package ui.beans;
 
+import java.util.Collection;
 import ui.beans.util.MobilePageController;
 import mauro.entity.Customer;
+import mauro.entity.PurchaseOrder;
 import javax.inject.Named;
 import javax.faces.view.ViewScoped;
 import javax.faces.context.FacesContext;
@@ -40,24 +42,35 @@ public class CustomerController extends AbstractController<Customer> {
      *
      * @return navigation outcome for PurchaseOrder page
      */
-    
-    
-    /**modified by mauro */
-    
+    /**
+     * modified by mauro/kay
+     */
     public String navigatePurchaseOrderCollection() {
         if (this.getSelected() != null) {
-            
-          /**modified by mauro 
-           re- attach the Cusotmer selected to persisteneew context for get the PurchaseOrderCollection loaded from db .
-           It use the method added to CustomerFacade named: attach_and_load_PurchaseOrderCollection(Customer customer) that return the Custoemr wuth purchaseOderCOllection loaded.
-           
-           */   
-            Customer attached=this.getCustomerFacade().attach_and_load_PurchaseOrderCollection(this.getSelected());
-     this.setSelected(attached);
-            
-            FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("PurchaseOrder_items", this.getSelected().getPurchaseOrderCollection());
+            // Re-attach entity to persistence context
+            //Collection<PurchaseOrder> purchaseOrderCollection = this.ejbFacade.attach(this.getSelected()).getPurchaseOrderCollection();
+            Collection<PurchaseOrder> purchaseOrderCollection = ((CustomerFacade) this.getEjbFacade()).getPurchaseOrders(this.getSelected());
+            if (purchaseOrderCollection != null) {
+                FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("PurchaseOrder_items", purchaseOrderCollection);
+            }
         }
         return this.mobilePageController.getMobilePagesPrefix() + "/entity/purchaseOrder/index";
+    }
+
+    /**
+     * Checks if customer has purchaseOrder entities
+     * @return
+     */
+    public boolean isPurchaseOrderCollectionEmpty() {
+        if (this.getSelected() != null) {
+            // Re-attach entity to persistence context
+            //Collection<PurchaseOrder> purchaseOrderCollection = this.ejbFacade.attach(this.getSelected()).getPurchaseOrderCollection();
+            Collection<PurchaseOrder> purchaseOrderCollection = ((CustomerFacade) this.getEjbFacade()).getPurchaseOrders(this.getSelected());
+            if (purchaseOrderCollection != null) {
+                return purchaseOrderCollection.isEmpty();
+            }
+        }
+        return true;
     }
 
     /**
@@ -83,7 +96,5 @@ public class CustomerController extends AbstractController<Customer> {
             zipController.setSelected(this.getSelected().getZip());
         }
     }
-    public CustomerFacade getCustomerFacade(){
-    
-   return  (CustomerFacade) super.getEjbFacade();}
+
 }
