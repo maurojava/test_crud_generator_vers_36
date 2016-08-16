@@ -37,6 +37,10 @@ public abstract class AbstractController<T> implements Serializable {
     private Collection<T> items;
     private LazyEntityDataModel<T> lazyItems;
 
+    public AbstractFacade<T> getEjbFacade() {
+        return ejbFacade;
+    }
+
     private enum PersistAction {
         CREATE,
         DELETE,

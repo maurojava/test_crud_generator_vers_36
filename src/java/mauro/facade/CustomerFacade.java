@@ -28,5 +28,14 @@ public class CustomerFacade extends AbstractFacade<Customer> {
     public CustomerFacade() {
         super(Customer.class);
     }
-    
+
+    /**
+     *method for re -attach the customer to persistence context and load the purchaseOrderCollection that for default is lazy loaded from Customer entity
+     */
+    public Customer attach_and_load_PurchaseOrderCollection(Customer customer) {
+        this.em.merge(customer);
+        customer.getPurchaseOrderCollection().size();
+        return customer;
+    }
+
 }

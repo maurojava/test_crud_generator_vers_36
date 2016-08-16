@@ -7,6 +7,7 @@ import javax.faces.view.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.inject.Inject;
+import mauro.facade.CustomerFacade;
 
 @Named(value = "customerController")
 @ViewScoped
@@ -39,8 +40,21 @@ public class CustomerController extends AbstractController<Customer> {
      *
      * @return navigation outcome for PurchaseOrder page
      */
+    
+    
+    /**modified by mauro */
+    
     public String navigatePurchaseOrderCollection() {
         if (this.getSelected() != null) {
+            
+          /**modified by mauro 
+           re- attach the Cusotmer selected to persisteneew context for get the PurchaseOrderCollection loaded from db .
+           It use the method added to CustomerFacade named: attach_and_load_PurchaseOrderCollection(Customer customer) that return the Custoemr wuth purchaseOderCOllection loaded.
+           
+           */   
+            Customer attached=this.getCustomerFacade().attach_and_load_PurchaseOrderCollection(this.getSelected());
+     this.setSelected(attached);
+            
             FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("PurchaseOrder_items", this.getSelected().getPurchaseOrderCollection());
         }
         return this.mobilePageController.getMobilePagesPrefix() + "/entity/purchaseOrder/index";
@@ -69,4 +83,7 @@ public class CustomerController extends AbstractController<Customer> {
             zipController.setSelected(this.getSelected().getZip());
         }
     }
+    public CustomerFacade getCustomerFacade(){
+    
+   return  (CustomerFacade) super.getEjbFacade();}
 }
