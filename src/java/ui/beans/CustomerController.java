@@ -1,5 +1,6 @@
 package ui.beans;
 
+import java.lang.reflect.Method;
 import java.util.Collection;
 import ui.beans.util.MobilePageController;
 import mauro.entity.Customer;
@@ -9,7 +10,6 @@ import javax.faces.view.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.inject.Inject;
-import mauro.facade.CustomerFacade;
 
 @Named(value = "customerController")
 @ViewScoped
@@ -22,9 +22,14 @@ public class CustomerController extends AbstractController<Customer> {
     @Inject
     private MobilePageController mobilePageController;
 
-    public CustomerController() {
+    // Helper variables for OneToMany collections
+    private final Method getPurchaseOrderCollectionMethod;
+    private Collection<PurchaseOrder> purchaseOrderCollection;
+
+    public CustomerController() throws NoSuchMethodException {
         // Inform the Abstract parent controller of the concrete Customer Entity
         super(Customer.class);
+        this.getPurchaseOrderCollectionMethod = Customer.class.getMethod("getPurchaseOrderCollection", (Class<?>[]) null);
     }
 
     /**
@@ -42,32 +47,27 @@ public class CustomerController extends AbstractController<Customer> {
      *
      * @return navigation outcome for PurchaseOrder page
      */
-    /**
-     * modified by mauro/kay
-     */
     public String navigatePurchaseOrderCollection() {
-        if (this.getSelected() != null) {
-            // Re-attach entity to persistence context
-            //Collection<PurchaseOrder> purchaseOrderCollection = this.ejbFacade.attach(this.getSelected()).getPurchaseOrderCollection();
-            Collection<PurchaseOrder> purchaseOrderCollection = ((CustomerFacade) this.getEjbFacade()).getPurchaseOrders(this.getSelected());
-            if (purchaseOrderCollection != null) {
-                FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("PurchaseOrder_items", purchaseOrderCollection);
-            }
+        if (this.getSelected() != null && this.purchaseOrderCollection != null) {
+            FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("PurchaseOrder_items", this.purchaseOrderCollection);
+            return this.mobilePageController.getMobilePagesPrefix() + "/entity/purchaseOrder/index";
+        } else {
+            return null;
         }
-        return this.mobilePageController.getMobilePagesPrefix() + "/entity/purchaseOrder/index";
     }
 
     /**
      * Checks if customer has purchaseOrder entities
+     *
      * @return
      */
     public boolean isPurchaseOrderCollectionEmpty() {
         if (this.getSelected() != null) {
             // Re-attach entity to persistence context
             //Collection<PurchaseOrder> purchaseOrderCollection = this.ejbFacade.attach(this.getSelected()).getPurchaseOrderCollection();
-            Collection<PurchaseOrder> purchaseOrderCollection = ((CustomerFacade) this.getEjbFacade()).getPurchaseOrders(this.getSelected());
-            if (purchaseOrderCollection != null) {
-                return purchaseOrderCollection.isEmpty();
+            this.purchaseOrderCollection = (Collection<PurchaseOrder>) this.getEjbFacade().getChildren(this.getSelected(), getPurchaseOrderCollectionMethod);
+            if (this.purchaseOrderCollection != null) {
+                return this.purchaseOrderCollection.isEmpty();
             }
         }
         return true;

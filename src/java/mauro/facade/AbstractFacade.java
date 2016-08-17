@@ -5,8 +5,12 @@
  */
 package mauro.facade;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Expression;
@@ -117,6 +121,27 @@ public abstract class AbstractFacade<T> {
         q.setMaxResults(pageSize);
         q.setFirstResult(first);
         return q.getResultList();
+    }
+    
+    /**
+     * Retrieve child entities from given entity using a  given entity method.
+     * The caller of this method needs to evaluate if the returned object is
+     * indeed a proper collection of child entities. It is also the responsibility
+     * of the caller to pass along a proper getter method.
+     * @param entity
+     * @param entityMethod
+     * @return an object that matches the return type of the entity's getter method
+     */
+    public Object getChildren(T entity, Method entityMethod) {
+        
+        T attachedEntity = this.getEntityManager().merge(entity);
+        try {
+            Object children = entityMethod.invoke(attachedEntity);
+            return children;
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            Logger.getLogger(AbstractFacade.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
     public int count(Map<String, Object> filters) {
